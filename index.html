@@ -13,11 +13,18 @@
         
         /* Grid für Kacheln */
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.03); text-align: center; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.03); text-align: center; transition: background-color 0.5s dashed; }
         .card h3 { margin: 0 0 10px 0; font-size: 13px; color: #777; text-transform: uppercase; letter-spacing: 0.5px; }
         .wert { font-size: 26px; font-weight: bold; color: #007bff; }
         .sub-wert { font-size: 12px; color: #666; margin-top: 8px; border-top: 1px solid #f2f2f2; padding-top: 6px; }
         
+        /* WARNFARBEN-STYLING */
+        .warn-frost { background-color: #e3f2fd !important; border-left: 5px solid #2196f3; } /* Hellblau */
+        .warn-hitze { background-color: #fff3e0 !important; border-left: 5px solid #ff9800; } /* Orange */
+        .warn-regen { background-color: #e8f5e9 !important; border-left: 5px solid #4caf50; } /* Grünlich/Hellblau für Regen */
+        .warn-wind-gelb { background-color: #fffde7 !important; border-left: 5px solid #fdd835; } /* Gelb */
+        .warn-wind-rot { background-color: #ffebee !important; border-left: 5px solid #f44336; } /* Rot */
+
         /* Tabelle */
         .table-wrapper { background: white; border-radius: 12px; overflow-x: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.03); }
         table { width: 100%; border-collapse: collapse; min-width: 1100px; }
@@ -33,33 +40,33 @@
         <h1>Wetterdaten Übersicht</h1>
         <div class="update-zeit">Stand: <span id="zeit">-</span></div>
 
-        <!-- Kacheln in exakt gewünschter Reihenfolge -->
+        <!-- Kacheln (IDs für die Kacheln selbst hinzugefügt für Farbwechsel) -->
         <div class="grid">
-            <div class="card">
+            <div class="card" id="kachel-temp-dach">
                 <h3>Temperatur Dach</h3>
                 <span id="temp-dach" class="wert">-</span> <span class="wert">°C</span>
                 <div class="sub-wert">Min: <span id="temp-dach-min">-</span>°C | Max: <span id="temp-dach-max">-</span>°C</div>
             </div>
             
-            <div class="card">
+            <div class="card" id="kachel-temp-schatten">
                 <h3>Temperatur Schatten</h3>
                 <span id="temp-schatten" class="wert">-</span> <span class="wert">°C</span>
                 <div class="sub-wert">Min: <span id="temp-schatten-min">-</span>°C | Max: <span id="temp-schatten-max">-</span>°C</div>
             </div>
             
             <div class="card">
-                <h3>Luftfeuchtigkeit</h3>
+                <h3>Feuchtigkeit Dach</h3>
                 <span id="hum-dach" class="wert">-</span> <span class="wert">%</span>
                 <div class="sub-wert">Min: <span id="hum-dach-min">-</span>% | Max: <span id="hum-dach-max">-</span>%</div>
             </div>
             
-            <div class="card">
+            <div class="card" id="kachel-wind">
                 <h3>Windgeschwindigkeit</h3>
                 <span id="wind-aktuell" class="wert">-</span> <span class="wert">km/h</span>
                 <div class="sub-wert">Min: <span id="wind-min">-</span> | Max: <span id="wind-max">-</span> km/h</div>
             </div>
 
-            <div class="card">
+            <div class="card" id="kachel-regen">
                 <h3>Regenmenge</h3>
                 <div style="margin-top: 5px;">Heute: <strong id="regen-heute" style="color: #007bff; font-size: 20px;">-</strong> mm</div>
                 <div class="sub-wert" style="border: none; padding: 0; margin-top: 5px;">Gestern: <span id="regen-gestern">-</span> mm</div>
@@ -75,8 +82,8 @@
                         <th>Zeitstempel</th>
                         <th>Temp Dach (Min/Max)</th>
                         <th>Temp Schatten (Min/Max)</th>
-                        <th>Luftfeuchtigkeit (Min/Max)</th>
-                        <th>Wind Aktuell (Min/Max)</th>
+                        <th>Feuchte Dach (Min/Max)</th>
+                        <th>Wind Aktualisiert (Min/Max)</th>
                         <th>Regen (Heute/Gestern)</th>
                     </tr>
                 </thead>
@@ -93,10 +100,10 @@
             .then(data => {
                 if (!Array.isArray(data) || data.length === 0) return;
 
-                let aktuell = data[0];
+                let aktuell = data[0]; // Das aktuellste Array-Element
                 document.getElementById('zeit').innerText = new Date(aktuell.zeitstempel).toLocaleString('de-DE');
                 
-                // Kacheln befüllen
+                // Werte in Kacheln schreiben
                 document.getElementById('temp-dach').innerText = aktuell.temp_dach ?? '-';
                 document.getElementById('temp-schatten').innerText = aktuell.temp_schatten ?? '-';
                 document.getElementById('hum-dach').innerText = aktuell.hum_dach ?? '-';
@@ -112,6 +119,33 @@
                 document.getElementById('hum-dach-max').innerText = aktuell.hum_dach_max ?? '-';
                 document.getElementById('wind-min').innerText = aktuell.wind_min ?? '0';
                 document.getElementById('wind-max').innerText = aktuell.wind_max ?? '0';
+
+                // DYNAMISCHE FARBHERVORHEBUNG (GRENZWERTE)
+                
+                // 1. Temperatur Dach einfärben
+                let tDach = parseFloat(aktuell.temp_dach);
+                if (tDach >= 30) document.getElementById('kachel-temp-dach').classList.add('warn-hitze');
+                if (tDach <= 0) document.getElementById('kachel-temp-dach').classList.add('warn-frost');
+
+                // 2. Temperatur Schatten einfärben
+                let tSchatten = parseFloat(aktuell.temp_schatten);
+                if (tSchatten >= 30) document.getElementById('kachel-temp-schatten').classList.add('warn-hitze');
+                if (tSchatten <= 0) document.getElementById('kachel-temp-schatten').classList.add('warn-frost');
+
+                // 3. Windgeschwindigkeit einfärben
+                let wAktuell = parseFloat(aktuell.wind_aktuell);
+                if (wAktuell >= 50) {
+                    document.getElementById('kachel-wind').classList.add('warn-wind-rot');
+                } else if (wAktuell >= 30) {
+                    document.getElementById('kachel-wind').classList.add('warn-wind-gelb');
+                }
+
+                // 4. Regenmenge heute einfärben
+                let rHeute = parseFloat(aktuell.regen_heute);
+                if (rHeute > 0) {
+                    document.getElementById('kachel-regen').classList.add('warn-regen');
+                    document.getElementById('regen-heute').style.color = '#2e7d32'; // Textfarbe auf Grün anpassen bei Regen
+                }
 
                 // Tabelle befüllen
                 let tabelle = document.getElementById('tabelle-verlauf');
