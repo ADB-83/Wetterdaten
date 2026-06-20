@@ -3,47 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meine Wetterstation mit Verlauf</title>
+    <title>Wetterstation Dashboard Pro</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background: #f0f2f5; padding: 30px; margin: 0; }
-        .container { max-width: 600px; margin: 0 auto; }
-        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); margin-bottom: 25px; }
-        h1 { color: #333; margin-top: 0; font-size: 24px; }
-        h2 { color: #555; font-size: 18px; text-align: left; padding-left: 5px; }
-        .wert { font-size: 28px; font-weight: bold; color: #007bff; }
+        body { font-family: Arial, sans-serif; background: #f0f2f5; padding: 20px; margin: 0; color: #333; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { text-align: center; margin-bottom: 5px; font-size: 26px; }
+        h2 { font-size: 18px; margin-top: 30px; margin-bottom: 10px; color: #555; }
+        .update-zeit { text-align: center; color: gray; font-size: 13px; margin-bottom: 25px; }
         
-        /* Tabellen-Styling */
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
-        th, td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; }
+        /* Grid für Kacheln */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.03); text-align: center; }
+        .card h3 { margin: 0 0 10px 0; font-size: 13px; color: #777; text-transform: uppercase; letter-spacing: 0.5px; }
+        .wert { font-size: 26px; font-weight: bold; color: #007bff; }
+        .sub-wert { font-size: 12px; color: #666; margin-top: 8px; border-top: 1px solid #f2f2f2; padding-top: 6px; }
+        
+        /* Tabelle */
+        .table-wrapper { background: white; border-radius: 12px; overflow-x: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.03); }
+        table { width: 100%; border-collapse: collapse; min-width: 1100px; }
+        th, td { padding: 12px 8px; text-align: center; border-bottom: 1px solid #f2f2f2; font-size: 13px; }
         th { background-color: #007bff; color: white; font-weight: bold; }
-        tr:hover { background-color: #f8f9fa; }
+        tr:nth-child(even) { background-color: #f8f9fa; }
+        tr:hover { background-color: #f1f3f5; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- Aktuelle Werte Oben -->
-        <div class="card">
-            <h1>Aktuelles Wetter</h1>
-            <p>Temperatur: <span id="temp" class="wert">-</span> °C</p>
-            <p>Luftfeuchtigkeit: <span id="hum" class="wert">-</span> %</p>
-            <small style="color: gray;">Letztes Update: <span id="zeit">-</span></small>
+        <h1>Wetterdaten Übersicht</h1>
+        <div class="update-zeit">Stand: <span id="zeit">-</span></div>
+
+        <!-- Kacheln in exakt gewünschter Reihenfolge -->
+        <div class="grid">
+            <div class="card">
+                <h3>Temperatur Dach</h3>
+                <span id="temp-dach" class="wert">-</span> <span class="wert">°C</span>
+                <div class="sub-wert">Min: <span id="temp-dach-min">-</span>°C | Max: <span id="temp-dach-max">-</span>°C</div>
+            </div>
+            
+            <div class="card">
+                <h3>Temperatur Schatten</h3>
+                <span id="temp-schatten" class="wert">-</span> <span class="wert">°C</span>
+                <div class="sub-wert">Min: <span id="temp-schatten-min">-</span>°C | Max: <span id="temp-schatten-max">-</span>°C</div>
+            </div>
+            
+            <div class="card">
+                <h3>Feuchtigkeit Dach</h3>
+                <span id="hum-dach" class="wert">-</span> <span class="wert">%</span>
+                <div class="sub-wert">Min: <span id="hum-dach-min">-</span>% | Max: <span id="hum-dach-max">-</span>%</div>
+            </div>
+            
+            <div class="card">
+                <h3>Windgeschwindigkeit</h3>
+                <span id="wind-aktuell" class="wert">-</span> <span class="wert">km/h</span>
+                <div class="sub-wert">Min: <span id="wind-min">-</span> | Max: <span id="wind-max">-</span> km/h</div>
+            </div>
+
+            <div class="card">
+                <h3>Regenmenge</h3>
+                <div style="margin-top: 5px;">Heute: <strong id="regen-heute" style="color: #007bff; font-size: 20px;">-</strong> mm</div>
+                <div class="sub-wert" style="border: none; padding: 0; margin-top: 5px;">Gestern: <span id="regen-gestern">-</span> mm</div>
+            </div>
         </div>
 
-        <!-- Verlaufstabelle Unten -->
+        <!-- Tabelle -->
         <h2>Verlauf (Letzte 24 Stunden)</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Uhrzeit / Datum</th>
-                    <th>Temperatur</th>
-                    <th>Luftfeuchtigkeit</th>
-                </tr>
-            </thead>
-            <tbody id="tabelle-verlauf">
-                <!-- Zeilen werden per JavaScript eingefügt -->
-            </tbody>
-        </table>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Zeitstempel</th>
+                        <th>Temp Dach (Min/Max)</th>
+                        <th>Temp Schatten (Min/Max)</th>
+                        <th>Feuchte Dach (Min/Max)</th>
+                        <th>Wind Aktuell (Min/Max)</th>
+                        <th>Regen (Heute/Gestern)</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelle-verlauf">
+                    <!-- JS Inhalt -->
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script>
@@ -52,27 +93,43 @@
             .then(data => {
                 if (!Array.isArray(data) || data.length === 0) return;
 
-                // 1. Aktuellsten Wert oben anzeigen (liegt an Position 0)
                 let aktuell = data[0];
-                document.getElementById('temp').innerText = aktuell.temperatur;
-                document.getElementById('hum').innerText = aktuell.luftfeuchtigkeit;
                 document.getElementById('zeit').innerText = new Date(aktuell.zeitstempel).toLocaleString('de-DE');
+                
+                // Kacheln befüllen
+                document.getElementById('temp-dach').innerText = aktuell.temp_dach ?? '-';
+                document.getElementById('temp-schatten').innerText = aktuell.temp_schatten ?? '-';
+                document.getElementById('hum-dach').innerText = aktuell.hum_dach ?? '-';
+                document.getElementById('wind-aktuell').innerText = aktuell.wind_aktuell ?? '0';
+                document.getElementById('regen-heute').innerText = aktuell.regen_heute ?? '0';
+                document.getElementById('regen-gestern').innerText = aktuell.regen_gestern ?? '0';
+                
+                document.getElementById('temp-dach-min').innerText = aktuell.temp_dach_min ?? '-';
+                document.getElementById('temp-dach-max').innerText = aktuell.temp_dach_max ?? '-';
+                document.getElementById('temp-schatten-min').innerText = aktuell.temp_schatten_min ?? '-';
+                document.getElementById('temp-schatten-max').innerText = aktuell.temp_schatten_max ?? '-';
+                document.getElementById('hum-dach-min').innerText = aktuell.hum_dach_min ?? '-';
+                document.getElementById('hum-dach-max').innerText = aktuell.hum_dach_max ?? '-';
+                document.getElementById('wind-min').innerText = aktuell.wind_min ?? '0';
+                document.getElementById('wind-max').innerText = aktuell.wind_max ?? '0';
 
-                // 2. Tabelle mit allen Verlaufsdaten befüllen
+                // Tabelle befüllen
                 let tabelle = document.getElementById('tabelle-verlauf');
-                tabelle.innerHTML = ""; // Tabelle leeren
+                tabelle.innerHTML = "";
 
                 data.forEach(eintrag => {
                     let zeile = document.createElement('tr');
-                    
                     let zeit = new Date(eintrag.zeitstempel).toLocaleString('de-DE', {
                         day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
                     });
 
                     zeile.innerHTML = `
                         <td>${zeit} Uhr</td>
-                        <td><strong>${eintrag.temperatur} °C</strong></td>
-                        <td>${eintrag.luftfeuchtigkeit} %</td>
+                        <td><strong>${eintrag.temp_dach ?? '-'} °C</strong> (${eintrag.temp_dach_min ?? '-'}/${eintrag.temp_dach_max ?? '-'})</td>
+                        <td><strong>${eintrag.temp_schatten ?? '-'} °C</strong> (${eintrag.temp_schatten_min ?? '-'}/${eintrag.temp_schatten_max ?? '-'})</td>
+                        <td><strong>${eintrag.hum_dach ?? '-'} %</strong> (${eintrag.hum_dach_min ?? '-'}/${eintrag.hum_dach_max ?? '-'})</td>
+                        <td>${eintrag.wind_aktuell ?? '0'} km/h (${eintrag.wind_min ?? '0'}/${eintrag.wind_max ?? '0'})</td>
+                        <td>${eintrag.regen_heute ?? '0'} / ${eintrag.regen_gestern ?? '0'} mm</td>
                     `;
                     tabelle.appendChild(zeile);
                 });
