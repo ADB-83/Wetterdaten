@@ -3,34 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meine Wetterstation</title>
+    <title>Meine Wetterstation mit Verlauf</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background: #f0f2f5; padding: 50px; }
-        .card { background: white; padding: 30px; border-radius: 15px; display: inline-block; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        h1 { color: #333; }
-        .wert { font-size: 24px; font-weight: bold; color: #007bff; }
+        body { font-family: Arial, sans-serif; text-align: center; background: #f0f2f5; padding: 30px; margin: 0; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        h1 { color: #333; margin-top: 0; font-size: 24px; }
+        h2 { color: #555; font-size: 18px; text-align: left; padding-left: 5px; }
+        .wert { font-size: 28px; font-weight: bold; color: #007bff; }
+        
+        /* Tabellen-Styling */
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
+        th, td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; }
+        th { background-color: #007bff; color: white; font-weight: bold; }
+        tr:hover { background-color: #f8f9fa; }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h1>Aktuelle Wetterdaten</h1>
-        <p>Temperatur: <span id="temp" class="wert">Lädt...</span> °C</p>
-        <p>Luftfeuchtigkeit: <span id="hum" class="wert">Lädt...</span> %</p>
-        <small style="color: gray;">Letztes Update: <span id="zeit">-</span></small>
+    <div class="container">
+        <!-- Aktuelle Werte Oben -->
+        <div class="card">
+            <h1>Aktuelles Wetter</h1>
+            <p>Temperatur: <span id="temp" class="wert">-</span> °C</p>
+            <p>Luftfeuchtigkeit: <span id="hum" class="wert">-</span> %</p>
+            <small style="color: gray;">Letztes Update: <span id="zeit">-</span></small>
+        </div>
+
+        <!-- Verlaufstabelle Unten -->
+        <h2>Verlauf (Letzte 24 Stunden)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Uhrzeit / Datum</th>
+                    <th>Temperatur</th>
+                    <th>Luftfeuchtigkeit</th>
+                </tr>
+            </thead>
+            <tbody id="tabelle-verlauf">
+                <!-- Zeilen werden per JavaScript eingefügt -->
+            </tbody>
+        </table>
     </div>
 
     <script>
-        // Lädt die von ioBroker hochgeladene wetter.json
         fetch('wetter.json')
             .then(response => response.json())
             .then(data => {
-                document.getElementById('temp').innerText = data.temperatur;
-                document.getElementById('hum').innerText = data.luftfeuchtigkeit;
-                
-                // Zeitstempel lesbar machen
-                let date = new Date(data.zeitstempel);
-                document.getElementById('zeit').innerText = date.toLocaleString('de-DE');
+                if (!Array.isArray(data) || data.length === 0) return;
+
+                // 1. Aktuellsten Wert oben anzeigen (liegt an Position 0)
+                let aktuell = data[0];
+                document.getElementById('temp').innerText = aktuell.temperatur;
+                document.getElementById('hum').innerText = aktuell.luftfeuchtigkeit;
+                document.getElementById('zeit').innerText = new Date(aktuell.zeitstempel).toLocaleString('de-DE');
+
+                // 2. Tabelle mit allen Verlaufsdaten befüllen
+                let tabelle = document.getElementById('tabelle-verlauf');
+                tabelle.innerHTML = ""; // Tabelle leeren
+
+                data.forEach(eintrag => {
+                    let zeile = document.createElement('tr');
+                    
+                    let zeit = new Date(eintrag.zeitstempel).toLocaleString('de-DE', {
+                        day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+                    });
+
+                    zeile.innerHTML = `
+                        <td>${zeit} Uhr</td>
+                        <td><strong>${eintrag.temperatur} °C</strong></td>
+                        <td>${eintrag.luftfeuchtigkeit} %</td>
+                    `;
+                    tabelle.appendChild(zeile);
+                });
             })
             .catch(err => console.error("Fehler beim Laden der Wetterdaten:", err));
     </script>
