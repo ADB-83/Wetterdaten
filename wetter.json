@@ -1,5 +1,14 @@
 [
   {
+    "zeitstempel": "2026-06-20T13:27:02.895Z",
+    "temperatur": 34.7,
+    "luftfeuchtigkeit": 24,
+    "regen_heute": 0,
+    "regen_gestern": 0,
+    "wind_aktuell": 0,
+    "wind_max": 0
+  },
+  {
     "zeitstempel": "2026-06-20T13:25:54.018Z",
     "temperatur": 34.7,
     "luftfeuchtigkeit": 24
