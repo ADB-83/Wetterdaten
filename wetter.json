@@ -1,5 +1,10 @@
 [
   {
+    "zeitstempel": "2026-06-20T13:13:26.364Z",
+    "temperatur": 35.2,
+    "luftfeuchtigkeit": 26
+  },
+  {
     "zeitstempel": "2026-06-20T13:04:07.518Z",
     "temperatur": 35.1,
     "luftfeuchtigkeit": 24
