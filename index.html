@@ -54,7 +54,7 @@
                 <div class="sub-wert">Min: <span id="temp-schatten-min">-</span>°C | Max: <span id="temp-schatten-max">-</span>°C</div>
             </div>
             
-            <div class="card">
+            <div class="card" id="kachel-hum">
                 <h3>Feuchtigkeit Dach</h3>
                 <span id="hum-dach" class="wert">-</span> <span class="wert">%</span>
                 <div class="sub-wert">Min: <span id="hum-dach-min">-</span>% | Max: <span id="hum-dach-max">-</span>%</div>
@@ -88,7 +88,7 @@
                     </tr>
                 </thead>
                 <tbody id="tabelle-verlauf">
-                    <!-- JS Inhalt -->
+                    <!-- Inhalt wird per JS geladen -->
                 </tbody>
             </table>
         </div>
@@ -96,12 +96,12 @@
 
     <script>
         function ladeWetterDaten() {
-            // "t=" verhindert, dass der Browser die alte JSON aus seinem Cache lädt
             fetch('wetter.json?t=' + new Date().getTime())
                 .then(response => response.json())
                 .then(data => {
                     if (!Array.isArray(data) || data.length === 0) return;
 
+                    // KORREKTUR: [0] greift sauber auf den neuesten Eintrag zu
                     let aktuell = data[0]; 
                     document.getElementById('zeit').innerText = new Date(aktuell.zeitstempel).toLocaleString('de-DE');
                     
@@ -122,14 +122,14 @@
                     document.getElementById('wind-min').innerText = aktuell.wind_min ?? '0';
                     document.getElementById('wind-max').innerText = aktuell.wind_max ?? '0';
 
-                    // Warnklassen vor dem Neuzuweisen löschen
+                    // Basis-Klasse wiederherstellen vor der Farbberechnung
                     document.getElementById('kachel-temp-dach').className = 'card';
                     document.getElementById('kachel-temp-schatten').className = 'card';
                     document.getElementById('kachel-wind').className = 'card';
                     document.getElementById('kachel-regen').className = 'card';
                     document.getElementById('regen-heute').style.color = '#007bff';
 
-                    // Farbliche Grenzwertprüfung
+                    // Grenzwert-Prüfung für Farben
                     let tDach = parseFloat(aktuell.temp_dach);
                     if (tDach >= 30) document.getElementById('kachel-temp-dach').classList.add('warn-hitze');
                     if (tDach <= 0) document.getElementById('kachel-temp-dach').classList.add('warn-frost');
@@ -167,3 +167,9 @@
                             <td><strong>${eintrag.temp_schatten ?? '-'} °C</strong> (${eintrag.temp_schatten_min ?? '-'}/${eintrag.temp_schatten_max ?? '-'})</td>
                             <td><strong>${eintrag.hum_dach ?? '-'} %</strong> (${eintrag.hum_dach_min ?? '-'}/${eintrag.hum_dach_max ?? '-'})</td>
                             <td>${eintrag.wind_aktuell ?? '0'} km/h (${eintrag.wind_min ?? '0'}/${eintrag.wind_max ?? '0'})</td>
+                            <td>${eintrag.regen_heute ?? '0'} / ${eintrag.regen_gestern ?? '0'} mm`;tabelle.appendChild(zeile);})</td>
+                        ;}).catch(err => console.error("Fehler beim Live-Laden:", err));}
+        
+        // Erster Aufruf beim Laden der SeiteladeWetterDaten();
+        
+        // Alle 30 Sekunden im Hintergrund neu prüfensetInterval(ladeWetterDaten, 30000);
