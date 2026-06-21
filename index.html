@@ -13,10 +13,11 @@
         
         /* Grid für Kacheln */
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.03); text-align: center; transition: background-color 0.5s ease; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.03); text-align: center; transition: background-color 0.5s ease; position: relative; }
         .card h3 { margin: 0 0 10px 0; font-size: 13px; color: #777; text-transform: uppercase; letter-spacing: 0.5px; }
         .wert { font-size: 26px; font-weight: bold; color: #007bff; }
         .sub-wert { font-size: 12px; color: #666; margin-top: 8px; border-top: 1px solid #f2f2f2; padding-top: 6px; }
+        .icon { font-size: 24px; margin-bottom: 8px; display: block; }
         
         /* Warnfarben-Styling */
         .warn-frost { background-color: #e3f2fd !important; border-left: 5px solid #2196f3; }
@@ -27,7 +28,7 @@
 
         /* Tabelle */
         .table-wrapper { background: white; border-radius: 12px; overflow-x: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.03); }
-        table { width: 100%; border-collapse: collapse; min-width: 1100px; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
         th, td { padding: 12px 8px; text-align: center; border-bottom: 1px solid #f2f2f2; font-size: 13px; }
         th { background-color: #007bff; color: white; font-weight: bold; }
         tr:nth-child(even) { background-color: #f8f9fa; }
@@ -40,51 +41,56 @@
         <h1>Wetterdaten Übersicht (Live)</h1>
         <div class="update-zeit">Stand: <span id="zeit">Lädt...</span></div>
 
-        <!-- Kacheln -->
+        <!-- Kacheln mit Symbolen -->
         <div class="grid">
             <div class="card" id="kachel-temp-dach">
+                <span class="icon">🏠</span>
                 <h3>Temperatur Dach</h3>
                 <span id="temp-dach" class="wert">-</span> <span class="wert">°C</span>
                 <div class="sub-wert">Min: <span id="temp-dach-min">-</span>°C | Max: <span id="temp-dach-max">-</span>°C</div>
             </div>
             
             <div class="card" id="kachel-temp-schatten">
+                <span class="icon">🌳</span>
                 <h3>Temperatur Schatten</h3>
                 <span id="temp-schatten" class="wert">-</span> <span class="wert">°C</span>
                 <div class="sub-wert">Min: <span id="temp-schatten-min">-</span>°C | Max: <span id="temp-schatten-max">-</span>°C</div>
             </div>
             
             <div class="card" id="kachel-hum">
-                <h3>Luftfeuchtigkeit</h3>
+                <span class="icon">💧</span>
+                <h3>Feuchtigkeit Dach</h3>
                 <span id="hum-dach" class="wert">-</span> <span class="wert">%</span>
                 <div class="sub-wert">Min: <span id="hum-dach-min">-</span>% | Max: <span id="hum-dach-max">-</span>%</div>
             </div>
             
             <div class="card" id="kachel-wind">
+                <span class="icon">💨</span>
                 <h3>Windgeschwindigkeit</h3>
                 <span id="wind-aktuell" class="wert">-</span> <span class="wert">km/h</span>
                 <div class="sub-wert">Min: <span id="wind-min">-</span> | Max: <span id="wind-max">-</span> km/h</div>
             </div>
 
             <div class="card" id="kachel-regen">
+                <span class="icon">🌧️</span>
                 <h3>Regenmenge</h3>
                 <div style="margin-top: 5px;">Heute: <strong id="regen-heute" style="color: #007bff; font-size: 20px;">-</strong> mm</div>
                 <div class="sub-wert" style="border: none; padding: 0; margin-top: 5px;">Gestern: <span id="regen-gestern">-</span> mm</div>
             </div>
         </div>
 
-        <!-- Tabelle -->
+        <!-- Tabelle (Bereinigte Spaltenköpfe) -->
         <h2>Verlauf (Letzte 24 Stunden)</h2>
         <div class="table-wrapper">
             <table>
                 <thead>
                     <tr>
                         <th>Zeitstempel</th>
-                        <th>Temp Dach (Min/Max)</th>
-                        <th>Temp Schatten (Min/Max)</th>
-                        <th>Luftfeuchtigkeit (Min/Max)</th>
-                        <th>Wind Aktuell (Min/Max)</th>
-                        <th>Regen (Heute/Gestern)</th>
+                        <th>Temp Dach</th>
+                        <th>Temp Schatten</th>
+                        <th>Feuchte Dach</th>
+                        <th>Wind Aktuell</th>
+                        <th>Regen heute</th>
                     </tr>
                 </thead>
                 <tbody id="tabelle-verlauf">
@@ -94,7 +100,8 @@
         </div>
     </div>
 
-    <script>
+
+       <script>
         function ladeWetterDaten() {
             fetch('wetter.json?t=' + new Date().getTime())
                 .then(response => response.json())
@@ -121,7 +128,7 @@
                     document.getElementById('wind-min').innerText = aktuell.wind_min ?? '0';
                     document.getElementById('wind-max').innerText = aktuell.wind_max ?? '0';
 
-                    // Basis-Klasse wiederherstellen
+                    // Basis-Klassen zurücksetzen
                     document.getElementById('kachel-temp-dach').className = 'card';
                     document.getElementById('kachel-temp-schatten').className = 'card';
                     document.getElementById('kachel-wind').className = 'card';
@@ -150,8 +157,7 @@
                         document.getElementById('regen-heute').style.color = '#2e7d32';
                     }
 
-                    
-                    // Tabelle befüllen
+                    // Tabelle befüllen (REINE Echtzeitwerte OHNE Min/Max)
                     let tabelle = document.getElementById('tabelle-verlauf');
                     tabelle.innerHTML = "";
 
@@ -163,11 +169,11 @@
 
                         zeile.innerHTML = `
                             <td>${zeit} Uhr</td>
-                            <td><strong>${eintrag.temp_dach ?? '-'} °C</strong> (${eintrag.temp_dach_min ?? '-'}/${eintrag.temp_dach_max ?? '-'})</td>
-                            <td><strong>${eintrag.temp_schatten ?? '-'} °C</strong> (${eintrag.temp_schatten_min ?? '-'}/${eintrag.temp_schatten_max ?? '-'})</td>
-                            <td><strong>${eintrag.hum_dach ?? '-'} %</strong> (${eintrag.hum_dach_min ?? '-'}/${eintrag.hum_dach_max ?? '-'})</td>
-                            <td>${eintrag.wind_aktuell ?? '0'} km/h (${eintrag.wind_min ?? '0'}/${eintrag.wind_max ?? '0'})</td>
-                            <td>${eintrag.regen_heute ?? '0'} / ${eintrag.regen_gestern ?? '0'} mm</td>
+                            <td><strong>${eintrag.temp_dach ?? '-'} °C</strong></td>
+                            <td>${eintrag.temp_schatten ?? '-'} °C</td>
+                            <td>${eintrag.hum_dach ?? '-'} %</td>
+                            <td>${eintrag.wind_aktuell ?? '0'} km/h</td>
+                            <td>${eintrag.regen_heute ?? '0'} mm</td>
                         `;
                         tabelle.appendChild(zeile);
                     });
@@ -175,7 +181,7 @@
                 .catch(err => console.error("Fehler beim Live-Laden:", err));
         }
 
-        // Erster Aufruf beim Laden der Seite
+        // Erster Aufruf
         ladeWetterDaten();
 
         // Alle 30 Sekunden im Hintergrund neu prüfen
