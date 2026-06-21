@@ -19,7 +19,7 @@
         .sub-wert { font-size: 12px; color: #666; margin-top: 8px; border-top: 1px solid #f2f2f2; padding-top: 6px; }
         .icon { font-size: 24px; margin-bottom: 8px; display: block; }
         
-        /* Warnfarben-Styling */
+        /* Warnfarben-Styling für Kacheln */
         .warn-frost { background-color: #e3f2fd !important; border-left: 5px solid #2196f3; }
         .warn-hitze { background-color: #fff3e0 !important; border-left: 5px solid #ff9800; }
         .warn-regen { background-color: #e8f5e9 !important; border-left: 5px solid #4caf50; }
@@ -28,11 +28,11 @@
 
         /* Tabelle */
         .table-wrapper { background: white; border-radius: 12px; overflow-x: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.03); }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        table { width: 100%; border-collapse: collapse; min-width: 950px; }
         th, td { padding: 12px 8px; text-align: center; border-bottom: 1px solid #f2f2f2; font-size: 13px; }
         th { background-color: #007bff; color: white; font-weight: bold; }
         tr:nth-child(even) { background-color: #f8f9fa; }
-        tr:hover { background-color: #f1f3f5; }
+        tr:hover { background-color: #f1f3f5 !important; }
     </style>
 </head>
 <body>
@@ -41,8 +41,9 @@
         <h1>Wetterdaten Übersicht (Live)</h1>
         <div class="update-zeit">Stand: <span id="zeit">Lädt...</span></div>
 
-        <!-- Kacheln mit Symbolen -->
-        <div class="card" id="kachel-temp-dach">
+        <!-- Kacheln -->
+        <div class="grid">
+            <div class="card" id="kachel-temp-dach">
                 <span class="icon">☀️</span>
                 <h3>Temperatur Dach</h3>
                 <span id="temp-dach" class="wert">-</span> <span class="wert">°C</span>
@@ -58,7 +59,7 @@
             
             <div class="card" id="kachel-hum">
                 <span class="icon">💧</span>
-                <h3>Feuchtigkeit Dach</h3>
+                <h3>Luftfeuchtigkeit</h3>
                 <span id="hum-dach" class="wert">-</span> <span class="wert">%</span>
                 <div class="sub-wert">Min: <span id="hum-dach-min">-</span>% | Max: <span id="hum-dach-max">-</span>%</div>
             </div>
@@ -78,7 +79,7 @@
             </div>
         </div>
 
-        <!-- Tabelle (Bereinigte Spaltenköpfe) -->
+        <!-- Tabelle -->
         <h2>Verlauf (Letzte 24 Stunden)</h2>
         <div class="table-wrapper">
             <table>
@@ -99,8 +100,7 @@
         </div>
     </div>
 
-
-       <script>
+    <script>
         function ladeWetterDaten() {
             fetch('wetter.json?t=' + new Date().getTime())
                 .then(response => response.json())
@@ -134,7 +134,7 @@
                     document.getElementById('kachel-regen').className = 'card';
                     document.getElementById('regen-heute').style.color = '#007bff';
 
-                    // Grenzwert-Prüfung für Farben
+                    // Grenzwert-Prüfung für Kachel-Farben
                     let tDach = parseFloat(aktuell.temp_dach);
                     if (tDach >= 30) document.getElementById('kachel-temp-dach').classList.add('warn-hitze');
                     if (tDach <= 0) document.getElementById('kachel-temp-dach').classList.add('warn-frost');
@@ -150,13 +150,19 @@
                         document.getElementById('kachel-wind').classList.add('warn-wind-gelb');
                     }
 
+                    // Regensensor-Prüfung für Kachel
+                    let rAktiv = aktuell.regen_aktiv;
                     let rHeute = parseFloat(aktuell.regen_heute);
-                    if (rHeute > 0) {
+
+                    if (rAktiv === true || rAktiv === "true") {
+                        document.getElementById('kachel-regen').classList.add('warn-wind-rot'); 
+                        document.getElementById('regen-heute').style.color = '#d32f2f'; 
+                    } else if (rHeute > 0) {
                         document.getElementById('kachel-regen').classList.add('warn-regen');
-                        document.getElementById('regen-heute').style.color = '#2e7d32';
+                        document.getElementById('regen-heute').style.color = '#2e7d32'; 
                     }
 
-                    // Tabelle befüllen (REINE Echtzeitwerte OHNE Min/Max)
+                    // Tabelle befüllen mit Highlights
                     let tabelle = document.getElementById('tabelle-verlauf');
                     tabelle.innerHTML = "";
 
@@ -166,13 +172,28 @@
                             day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
                         });
 
+                        // 1. Highlight für Regen in der Tabelle
+                        let regenStatusText = "";
+                        if (eintrag.regen_aktiv === true || eintrag.regen_aktiv === "true") {
+                            regenStatusText = ' <span style="color: #d32f2f; font-weight: bold;">🌧️ (aktiv)</span>';
+                            zeile.style.backgroundColor = "#eef7ff"; // Dezent hellblaue Zeile bei Regen
+                        }
+
+                        // 2. Highlight für Windböen / Sturm in der Tabelle
+                        let windWert = parseFloat(eintrag.wind_aktuell) || 0;
+                        let windStatusText = `<span>${windWert} km/h</span>`;
+                        if (windWert >= 40) {
+                            // Wenn der Wind >= 40 km/h war, färben wir den Text orange und fügen ein Symbol an
+                            windStatusText = `<span style="color: #ff9800; font-weight: bold;">💨 ${windWert} km/h</span>`;
+                        }
+
                         zeile.innerHTML = `
                             <td>${zeit} Uhr</td>
                             <td><strong>${eintrag.temp_dach ?? '-'} °C</strong></td>
                             <td>${eintrag.temp_schatten ?? '-'} °C</td>
                             <td>${eintrag.hum_dach ?? '-'} %</td>
-                            <td>${eintrag.wind_aktuell ?? '0'} km/h</td>
-                            <td>${eintrag.regen_heute ?? '0'} mm</td>
+                            <td>${windStatusText}</td>
+                            <td>${eintrag.regen_heute ?? '0'} mm${regenStatusText}</td>
                         `;
                         tabelle.appendChild(zeile);
                     });
@@ -180,7 +201,7 @@
                 .catch(err => console.error("Fehler beim Live-Laden:", err));
         }
 
-        // Erster Aufruf
+        // Erster Aufruf beim Laden der Seite
         ladeWetterDaten();
 
         // Alle 30 Sekunden im Hintergrund neu prüfen
@@ -188,3 +209,4 @@
     </script>
 </body>
 </html>
+
