@@ -1,5 +1,22 @@
 [
   {
+    "zeitstempel": "2026-06-21T01:30:00.025Z",
+    "temp_dach": 20.6,
+    "temp_schatten": 19,
+    "hum_dach": 56,
+    "wind_aktuell": 12,
+    "regen_heute": 0,
+    "regen_gestern": 0,
+    "temp_dach_min": 20.2,
+    "temp_dach_max": 23.5,
+    "temp_schatten_min": 0,
+    "temp_schatten_max": 0,
+    "hum_dach_min": 51,
+    "hum_dach_max": 58,
+    "wind_min": 0,
+    "wind_max": 23.3
+  },
+  {
     "zeitstempel": "2026-06-21T01:15:00.034Z",
     "temp_dach": 20.5,
     "temp_schatten": 19.1,
