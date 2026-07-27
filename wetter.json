@@ -1,5 +1,23 @@
 [
   {
+    "zeitstempel": "2026-07-27T15:00:00.005Z",
+    "temp_dach": 30.5,
+    "temp_schatten": 29.7,
+    "hum_dach": 33,
+    "wind_aktuell": 23,
+    "regen_heute": 0,
+    "regen_gestern": 3.3,
+    "regen_aktiv": false,
+    "temp_dach_min": 15.6,
+    "temp_dach_max": 31,
+    "temp_schatten_min": 15.8,
+    "temp_schatten_max": 29.7,
+    "hum_dach_min": 31,
+    "hum_dach_max": 84,
+    "wind_min": 0,
+    "wind_max": 36.6
+  },
+  {
     "zeitstempel": "2026-07-27T14:40:00.005Z",
     "temp_dach": 30.7,
     "temp_schatten": 29.5,
@@ -1705,24 +1723,6 @@
     "temp_schatten_min": 15.5,
     "temp_schatten_max": 16.8,
     "hum_dach_min": 82,
-    "hum_dach_max": 90,
-    "wind_min": 0,
-    "wind_max": 16.2
-  },
-  {
-    "zeitstempel": "2026-07-26T07:00:00.002Z",
-    "temp_dach": 16.9,
-    "temp_schatten": 16.6,
-    "hum_dach": 83,
-    "wind_aktuell": 7,
-    "regen_heute": 2.7,
-    "regen_gestern": 13.6,
-    "regen_aktiv": false,
-    "temp_dach_min": 15.4,
-    "temp_dach_max": 16.9,
-    "temp_schatten_min": 15.5,
-    "temp_schatten_max": 16.6,
-    "hum_dach_min": 83,
     "hum_dach_max": 90,
     "wind_min": 0,
     "wind_max": 16.2
