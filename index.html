@@ -99,114 +99,141 @@
             </table>
         </div>
     </div>
-
     <script>
         function ladeWetterDaten() {
             fetch('wetter.json?t=' + new Date().getTime())
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    return response.json();
+                })
                 .then(data => {
-                    if (!Array.isArray(data) || data.length === 0) return;
+                    // Neues Format: { aktuell: {...}, verlauf: [...] }
+                    // Übergangsweise wird auch das alte Array-Format unterstützt.
+                    let aktuell;
+                    let verlauf;
 
-                    let aktuell = data[0]; 
-                    document.getElementById('zeit').innerText = new Date(aktuell.zeitstempel).toLocaleString('de-DE');
-                    
-                    // Kacheln befüllen
-                    document.getElementById('temp-dach').innerText = aktuell.temp_dach ?? '-';
-                    document.getElementById('temp-schatten').innerText = aktuell.temp_schatten ?? '-';
-                    document.getElementById('hum-dach').innerText = aktuell.hum_dach ?? '-';
-                    document.getElementById('wind-aktuell').innerText = aktuell.wind_aktuell ?? '0';
-                    document.getElementById('regen-heute').innerText = aktuell.regen_heute ?? '0';
-                    document.getElementById('regen-gestern').innerText = aktuell.regen_gestern ?? '0';
-                    
-                    document.getElementById('temp-dach-min').innerText = aktuell.temp_dach_min ?? '-';
-                    document.getElementById('temp-dach-max').innerText = aktuell.temp_dach_max ?? '-';
-                    document.getElementById('temp-schatten-min').innerText = aktuell.temp_schatten_min ?? '-';
-                    document.getElementById('temp-schatten-max').innerText = aktuell.temp_schatten_max ?? '-';
-                    document.getElementById('hum-dach-min').innerText = aktuell.hum_dach_min ?? '-';
-                    document.getElementById('hum-dach-max').innerText = aktuell.hum_dach_max ?? '-';
-                    document.getElementById('wind-min').innerText = aktuell.wind_min ?? '0';
-                    document.getElementById('wind-max').innerText = aktuell.wind_max ?? '0';
+                    if (data && !Array.isArray(data) && data.aktuell) {
+                        aktuell = data.aktuell;
+                        verlauf = Array.isArray(data.verlauf) ? data.verlauf : [];
+                    } else if (Array.isArray(data) && data.length > 0) {
+                        aktuell = data[0];
+                        verlauf = data.slice(1);
+                    } else {
+                        throw new Error('Unbekanntes wetter.json-Format');
+                    }
 
-                    // Basis-Klassen zurücksetzen
+                    // Zeitstempel
+                    const zeitstempelKachel = aktuell.zeitstempel ?? aktuell.zeitstempel_aktuell;
+                    if (zeitstempelKachel) {
+                        document.getElementById('zeit').innerText = new Date(zeitstempelKachel).toLocaleString('de-DE');
+                    }
+
+                    // Kacheln – neues Format und altes _aktuell-Format werden unterstützt
+                    document.getElementById('temp-dach').innerText = aktuell.temp_dach ?? aktuell.temp_dach_aktuell ?? '-';
+                    document.getElementById('temp-schatten').innerText = aktuell.temp_schatten ?? aktuell.temp_schatten_aktuell ?? '-';
+                    document.getElementById('hum-dach').innerText = aktuell.hum_dach ?? aktuell.hum_dach_aktuell ?? '-';
+                    document.getElementById('wind-aktuell').innerText = aktuell.wind ?? aktuell.wind_aktuell_aktuell ?? aktuell.wind_aktuell ?? '0';
+                    document.getElementById('regen-heute').innerText = aktuell.regen_heute ?? aktuell.regen_heute_aktuell ?? '0';
+                    document.getElementById('regen-gestern').innerText = aktuell.regen_gestern ?? aktuell.regen_gestern_aktuell ?? '0';
+
+                    // Min/Max
+                    document.getElementById('temp-dach-min').innerText = aktuell.temp_dach_min ?? aktuell.temp_dach_min_aktuell ?? '-';
+                    document.getElementById('temp-dach-max').innerText = aktuell.temp_dach_max ?? aktuell.temp_dach_max_aktuell ?? '-';
+                    document.getElementById('temp-schatten-min').innerText = aktuell.temp_schatten_min ?? aktuell.temp_schatten_min_aktuell ?? '-';
+                    document.getElementById('temp-schatten-max').innerText = aktuell.temp_schatten_max ?? aktuell.temp_schatten_max_aktuell ?? '-';
+                    document.getElementById('hum-dach-min').innerText = aktuell.hum_dach_min ?? aktuell.hum_dach_min_aktuell ?? '-';
+                    document.getElementById('hum-dach-max').innerText = aktuell.hum_dach_max ?? aktuell.hum_dach_max_aktuell ?? '-';
+                    document.getElementById('wind-min').innerText = aktuell.wind_min ?? aktuell.wind_min_aktuell ?? '0';
+                    document.getElementById('wind-max').innerText = aktuell.wind_max ?? aktuell.wind_max_aktuell ?? '0';
+
+                    // Kachel-Farben zurücksetzen
                     document.getElementById('kachel-temp-dach').className = 'card';
                     document.getElementById('kachel-temp-schatten').className = 'card';
                     document.getElementById('kachel-wind').className = 'card';
                     document.getElementById('kachel-regen').className = 'card';
                     document.getElementById('regen-heute').style.color = '#007bff';
 
-                    // Grenzwert-Prüfung für Kachel-Farben
-                    let tDach = parseFloat(aktuell.temp_dach);
-                    if (tDach >= 30) document.getElementById('kachel-temp-dach').classList.add('warn-hitze');
-                    if (tDach <= 0) document.getElementById('kachel-temp-dach').classList.add('warn-frost');
-
-                    let tSchatten = parseFloat(aktuell.temp_schatten);
-                    if (tSchatten >= 30) document.getElementById('kachel-temp-schatten').classList.add('warn-hitze');
-                    if (tSchatten <= 0) document.getElementById('kachel-temp-schatten').classList.add('warn-frost');
-
-                    let wAktuell = parseFloat(aktuell.wind_aktuell);
-                    if (wAktuell >= 50) {
-                        document.getElementById('kachel-wind').classList.add('warn-wind-rot');
-                    } else if (wAktuell >= 30) {
-                        document.getElementById('kachel-wind').classList.add('warn-wind-gelb');
+                    // Grenzwert-Prüfung
+                    const tDach = parseFloat(aktuell.temp_dach ?? aktuell.temp_dach_aktuell);
+                    if (Number.isFinite(tDach)) {
+                        if (tDach >= 30) document.getElementById('kachel-temp-dach').classList.add('warn-hitze');
+                        if (tDach <= 0) document.getElementById('kachel-temp-dach').classList.add('warn-frost');
                     }
 
-                    // Regensensor-Prüfung für Kachel
-                    let rAktiv = aktuell.regen_aktiv;
-                    let rHeute = parseFloat(aktuell.regen_heute);
+                    const tSchatten = parseFloat(aktuell.temp_schatten ?? aktuell.temp_schatten_aktuell);
+                    if (Number.isFinite(tSchatten)) {
+                        if (tSchatten >= 30) document.getElementById('kachel-temp-schatten').classList.add('warn-hitze');
+                        if (tSchatten <= 0) document.getElementById('kachel-temp-schatten').classList.add('warn-frost');
+                    }
 
-                    if (rAktiv === true || rAktiv === "true") {
-                        document.getElementById('kachel-regen').classList.add('warn-wind-rot'); 
-                        document.getElementById('regen-heute').style.color = '#d32f2f'; 
-                    } else if (rHeute > 0) {
+                    const wAktuell = parseFloat(aktuell.wind ?? aktuell.wind_aktuell_aktuell ?? aktuell.wind_aktuell);
+                    if (Number.isFinite(wAktuell)) {
+                        if (wAktuell >= 50) {
+                            document.getElementById('kachel-wind').classList.add('warn-wind-rot');
+                        } else if (wAktuell >= 30) {
+                            document.getElementById('kachel-wind').classList.add('warn-wind-gelb');
+                        }
+                    }
+
+                    // Regensensor
+                    const rAktiv = aktuell.regen_aktiv ?? aktuell.regen_aktiv_aktuell;
+                    const rHeute = parseFloat(aktuell.regen_heute ?? aktuell.regen_heute_aktuell);
+                    if (rAktiv === true || rAktiv === 'true') {
+                        document.getElementById('kachel-regen').classList.add('warn-wind-rot');
+                        document.getElementById('regen-heute').style.color = '#d32f2f';
+                    } else if (Number.isFinite(rHeute) && rHeute > 0) {
                         document.getElementById('kachel-regen').classList.add('warn-regen');
-                        document.getElementById('regen-heute').style.color = '#2e7d32'; 
+                        document.getElementById('regen-heute').style.color = '#2e7d32';
                     }
 
-                    // Tabelle befüllen mit Highlights
-                    let tabelle = document.getElementById('tabelle-verlauf');
-                    tabelle.innerHTML = "";
+                    // Tabelle mit historischen Werten
+                    const tabelle = document.getElementById('tabelle-verlauf');
+                    tabelle.innerHTML = '';
 
-                    data.forEach(eintrag => {
-                        let zeile = document.createElement('tr');
-                        let zeit = new Date(eintrag.zeitstempel).toLocaleString('de-DE', {
+                    verlauf.forEach(eintrag => {
+                        const roherZeitstempel = eintrag.zeitstempel ?? eintrag.zeitstempel_aktuell;
+                        if (!roherZeitstempel) return;
+
+                        const zeile = document.createElement('tr');
+                        const zeit = new Date(roherZeitstempel).toLocaleString('de-DE', {
                             day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
                         });
 
-                        // 1. Highlight für Regen in der Tabelle
-                        let regenStatusText = "";
-                        if (eintrag.regen_aktiv === true || eintrag.regen_aktiv === "true") {
+                        const tDachHistorisch = eintrag.temp_dach ?? eintrag.temp_dach_aktuell ?? '-';
+                        const tSchattenHistorisch = eintrag.temp_schatten ?? eintrag.temp_schatten_aktuell ?? '-';
+                        const hDachHistorisch = eintrag.hum_dach ?? eintrag.hum_dach_aktuell ?? '-';
+                        const wAktuellHistorisch = eintrag.wind ?? eintrag.wind_aktuell_aktuell ?? eintrag.wind_aktuell ?? '0';
+                        const rHeuteHistorisch = eintrag.regen_heute ?? eintrag.regen_heute_aktuell ?? '0';
+                        const rAktivHistorisch = eintrag.regen_aktiv ?? eintrag.regen_aktiv_aktuell;
+
+                        let regenStatusText = '';
+                        if (rAktivHistorisch === true || rAktivHistorisch === 'true') {
                             regenStatusText = ' <span style="color: #d32f2f; font-weight: bold;">🌧️ (aktiv)</span>';
-                            zeile.style.backgroundColor = "#eef7ff"; // Dezent hellblaue Zeile bei Regen
+                            zeile.style.backgroundColor = '#eef7ff';
                         }
 
-                        // 2. Highlight für Windböen / Sturm in der Tabelle
-                        let windWert = parseFloat(eintrag.wind_aktuell) || 0;
+                        const windWert = parseFloat(wAktuellHistorisch) || 0;
                         let windStatusText = `<span>${windWert} km/h</span>`;
                         if (windWert >= 40) {
-                            // Wenn der Wind >= 40 km/h war, färben wir den Text orange und fügen ein Symbol an
                             windStatusText = `<span style="color: #ff9800; font-weight: bold;">💨 ${windWert} km/h</span>`;
                         }
 
                         zeile.innerHTML = `
                             <td>${zeit} Uhr</td>
-                            <td><strong>${eintrag.temp_dach ?? '-'} °C</strong></td>
-                            <td>${eintrag.temp_schatten ?? '-'} °C</td>
-                            <td>${eintrag.hum_dach ?? '-'} %</td>
+                            <td><strong>${tDachHistorisch} °C</strong></td>
+                            <td>${tSchattenHistorisch} °C</td>
+                            <td>${hDachHistorisch} %</td>
                             <td>${windStatusText}</td>
-                            <td>${eintrag.regen_heute ?? '0'} mm${regenStatusText}</td>
+                            <td>${rHeuteHistorisch} mm${regenStatusText}</td>
                         `;
                         tabelle.appendChild(zeile);
                     });
                 })
-                .catch(err => console.error("Fehler beim Live-Laden:", err));
+                .catch(err => console.error('Fehler beim Live-Laden:', err));
         }
 
-        // Erster Aufruf beim Laden der Seite
         ladeWetterDaten();
-
-        // Alle 30 Sekunden im Hintergrund neu prüfen
         setInterval(ladeWetterDaten, 30000);
     </script>
 </body>
 </html>
-
