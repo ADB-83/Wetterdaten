@@ -1,10 +1,10 @@
 {
   "aktuell": {
-    "zeitstempel": "2026-10-23T00:00:00.005Z",
-    "temp_dach": 5,
-    "temp_schatten": 4.4,
-    "hum_dach": 69,
-    "wind": 10,
+    "zeitstempel": "2026-10-23T00:16:04.561Z",
+    "temp_dach": 5.6,
+    "temp_schatten": 4.6,
+    "hum_dach": 67,
+    "wind": 11,
     "regen_heute": 0,
     "regen_gestern": 0,
     "regen_aktiv": false,
@@ -18,6 +18,24 @@
     "wind_max": 14.2
   },
   "verlauf": [
+    {
+      "zeitstempel": "2026-10-23T00:16:04.561Z",
+      "temp_dach": 5.6,
+      "temp_schatten": 4.6,
+      "hum_dach": 67,
+      "wind": 11,
+      "regen_heute": 0,
+      "regen_gestern": 0,
+      "regen_aktiv": false,
+      "temp_dach_min": 4.3,
+      "temp_dach_max": 6.4,
+      "temp_schatten_min": 4.4,
+      "temp_schatten_max": 5.7,
+      "hum_dach_min": 65,
+      "hum_dach_max": 73,
+      "wind_min": 0,
+      "wind_max": 14.2
+    },
     {
       "zeitstempel": "2026-10-23T00:00:00.005Z",
       "temp_dach": 5,
@@ -1709,24 +1727,6 @@
       "hum_dach_max": 90,
       "wind_min": 0,
       "wind_max": 38.2
-    },
-    {
-      "zeitstempel": "2026-10-21T17:00:00.003Z",
-      "temp_dach": 9.6,
-      "temp_schatten": 9.9,
-      "hum_dach": 76,
-      "wind": 18,
-      "regen_heute": 18.2,
-      "regen_gestern": 0,
-      "regen_aktiv": false,
-      "temp_dach_min": 9.3,
-      "temp_dach_max": 14.3,
-      "temp_schatten_min": 9.9,
-      "temp_schatten_max": 13.8,
-      "hum_dach_min": 60,
-      "hum_dach_max": 90,
-      "wind_min": 0,
-      "wind_max": 35
     }
   ]
 }
