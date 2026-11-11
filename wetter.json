@@ -1,13 +1,13 @@
 {
   "aktuell": {
-    "zeitstempel": "2026-11-11T13:33:17.824Z",
+    "zeitstempel": "2026-11-11T13:33:38.859Z",
     "temp_dach": 11.8,
     "temp_schatten": 12.7,
     "hum_dach": 79,
     "wind": 7,
     "regen_heute": 0.3,
     "regen_gestern": 10.3,
-    "regen_aktiv": false,
+    "regen_aktiv": true,
     "temp_dach_min": 7.1,
     "temp_dach_max": 14.4,
     "temp_schatten_min": 6.9,
